@@ -464,7 +464,7 @@ zabbix_export:
         - uuid: 35884c73c7b44318ba9c34e1b7bda507
           name: 'Device Walk Remote Cam'
           type: SNMP_AGENT
-          snmp_oid: 'walk[.1.3.6.1.4.1.1004849.2.10.2.2.1.2,.1.3.6.1.4.1.1004849.2.10.2.2.1.3,.1.3.6.1.4.1.1004849.2.10.2.2.1.4]'
+          snmp_oid: 'walk[.1.3.6.1.4.1.1004849.2.10.2.2.1.2,.1.3.6.1.4.1.1004849.2.10.1.2.1.2,.1.3.6.1.4.1.1004849.2.10.2.2.1.4]'
           key: enterprises.remoteDeviceInfo.walk
           delay: 5m
           history: '0'
@@ -1211,7 +1211,7 @@ zabbix_export:
               preprocessing:
                 - type: SNMP_WALK_VALUE
                   parameters:
-                    - '.1.3.6.1.4.1.1004849.2.10.2.2.1.3.{#SNMPINDEX}'
+                    - '.1.3.6.1.4.1.1004849.2.10.1.2.1.2.{#SNMPINDEX}'
                     - '0'
                 - type: STR_REPLACE
                   parameters:
@@ -1277,11 +1277,24 @@ zabbix_export:
                 - .1.3.6.1.4.1.1004849.2.10.2.2.1.2
                 - '0'
                 - '{#CAM_STATUS}'
-                - .1.3.6.1.4.1.1004849.2.10.2.2.1.3
+                - .1.3.6.1.4.1.1004849.2.10.1.2.1.2
                 - '0'
                 - '{#CAM_NAME}'
                 - .1.3.6.1.4.1.1004849.2.10.2.2.1.4
                 - '0'
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var data = JSON.parse(value);
+                  
+                  for (var i = 0; i < data.length; i++) {
+                      if (data[i]['{#SNMPINDEX}'] !== undefined) {
+                          var idx = parseInt(data[i]['{#SNMPINDEX}']);
+                          data[i]['{#SNMPINDEX}'] = (idx + 1).toString();
+                      }
+                  }
+                  
+                  return JSON.stringify(data);
             - type: DISCARD_UNCHANGED_HEARTBEAT
               parameters:
                 - 1h
